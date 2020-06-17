@@ -1,4 +1,5 @@
 import sys
+from random import randint
 
 import pygame
 
@@ -6,6 +7,7 @@ from game.settings import Settings
 from game.ship import Ship
 from game.bullet import Bullet
 from game.alien import Alien
+from game.star import Star
 
 
 class AlienInvasion:
@@ -29,8 +31,10 @@ class AlienInvasion:
 
         self.ship = Ship(self)
         self.bullets = pygame.sprite.Group()
+        self.stars = pygame.sprite.Group()
         self.aliens = pygame.sprite.Group()
 
+        self._populate_sky()
         self._create_fleet()
 
     def run_game(self):
@@ -39,6 +43,7 @@ class AlienInvasion:
             self._check_events()
             self.ship.update()
             self._update_bullets()
+            self._update_aliens()
             self._update_screen()
 
     def _check_events(self):
@@ -81,6 +86,7 @@ class AlienInvasion:
         self.ship.blit_me()
         for bullet in self.bullets.sprites():
             bullet.draw_bullet()
+        self.stars.draw(self.screen)
         self.aliens.draw(self.screen)
 
         pygame.display.flip()
@@ -90,9 +96,8 @@ class AlienInvasion:
         alien = Alien(self)
         alien_width, alien_height = alien.rect.size
         # Double indent from left side of the screen for every even row
-        indent_width = alien_width if row_number % 2 == 0 else 2 * alien_width
-        alien.x = indent_width + 2 * alien_width * alien_number
-        alien.y = alien_height + 2 * alien_height * row_number
+        # indent_width = alien_width if row_number % 2 == 0 else 2 * alien_width
+        alien.x = alien_width + 2 * alien_width * alien_number
         alien.rect.x = alien.x
         alien.rect.y = alien_height + 2 * alien_height * row_number
         self.aliens.add(alien)
@@ -108,7 +113,7 @@ class AlienInvasion:
         available_space_in_row = self.settings.screen_width - 2 * alien_width
         number_aliens_in_row = available_space_in_row // (2 * alien_width)
         # Determine a number of rows of alien to fit the screen
-        available_space_for_rows = self.settings.screen_height - ship_height - (3 * alien_height)
+        available_space_for_rows = self.settings.screen_height - ship_height - (5 * alien_height)
         number_of_rows = available_space_for_rows // (2 * alien_height)
 
         # Creates the fleet of aliens
@@ -124,6 +129,32 @@ class AlienInvasion:
         for bullet in self.bullets.copy():
             if bullet.rect.bottom <= 0:
                 self.bullets.remove(bullet)
+
+    def _update_aliens(self):
+        """ Check if the fleet is at an edge, then update the position of all aliens in the fleet """
+        self._check_fleet_edges()
+        self.aliens.update()
+
+    def _check_fleet_edges(self):
+        """ Respond appropriately if any aliens have reached the edge """
+        for alien in self.aliens.sprites():
+            if alien.check_edges():
+                self._change_fleet_direction()
+                break
+
+    def _change_fleet_direction(self):
+        """ Drop the entire fleet and change the fleet's direction """
+        for alien in self.aliens.sprites():
+            alien.rect.y += self.settings.fleet_drop_speed
+        self.settings.fleet_direction *= -1
+
+    def _populate_sky(self):
+        for _ in range(self.settings.star_count):
+            star = Star(self)
+            star_width, star_height = star.rect.size
+            star.rect.x = randint(star_width, self.settings.screen_width - star_width)
+            star.rect.y = randint(star_height, self.settings.screen_height - star_height)
+            self.stars.add(star)
 
 
 if __name__ == '__main__':
