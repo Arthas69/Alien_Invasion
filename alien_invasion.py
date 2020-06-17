@@ -89,7 +89,9 @@ class AlienInvasion:
         """ Create an alien and place it in the row """
         alien = Alien(self)
         alien_width, alien_height = alien.rect.size
-        alien.x = alien_width + 2 * alien_width * alien_number
+        # Double indent from left side of the screen for every even row
+        indent_width = alien_width if row_number % 2 == 0 else 2 * alien_width
+        alien.x = indent_width + 2 * alien_width * alien_number
         alien.y = alien_height + 2 * alien_height * row_number
         alien.rect.x = alien.x
         alien.rect.y = alien_height + 2 * alien_height * row_number
