@@ -84,6 +84,18 @@ class AlienInvasion:
             self._fire_bullet()
         elif event.key == pygame.K_p:
             self._start_game()
+        elif event.key == pygame.K_PAGEUP:
+            self.settings.manual_level += 1
+            self.stats.level = self.settings.manual_level
+            self.sb.prep_level()
+        elif event.key == pygame.K_PAGEDOWN:
+            self.settings.manual_level -= 1
+            if self.settings.manual_level < 1:
+                self.settings.manual_level = 1
+            self.stats.level = self.settings.manual_level
+            self.sb.prep_level()
+        elif event.key == pygame.K_r:
+            self._end_game()
 
     def _check_keyup_events(self, event):
         """ Respond to key releases """
@@ -111,14 +123,18 @@ class AlienInvasion:
             self.sb.check_high_score()
 
         if not self.aliens:
-            # Destroy existing bullets and create new fleet
-            self.bullets.empty()
-            self._create_fleet()
-            self.settings.increase_speed()
+            self._start_new_level()
 
-            # Increase level
-            self.stats.level += 1
-            self.sb.prep_level()
+    def _start_new_level(self):
+        """ Level up the game if all alien ships were destroyed """
+        # Destroy existing bullets and create new fleet
+        self.bullets.empty()
+        self._create_fleet()
+        self.settings.increase_speed()
+
+        # Increase level
+        self.stats.level += 1
+        self.sb.prep_level()
 
     def _check_fleet_edges(self):
         """ Respond appropriately if any aliens have reached the edge """
@@ -172,6 +188,13 @@ class AlienInvasion:
             for alien_number in range(number_aliens_in_row):
                 self._create_alien(alien_number, row_number)
 
+    def _end_game(self):
+        """ Set end game conditions """
+        self.stats.game_active = False
+        self.settings.manual_level = 1
+        self.sb.store_high_score()
+        pygame.mouse.set_visible(True)
+
     def _fire_bullet(self):
         """ Create a new bullet and add it to the bullets group """
         if len(self.bullets) < self.settings.bullets_allowed:
@@ -192,9 +215,8 @@ class AlienInvasion:
         # Reset the game stats
         self.stats.reset_stats()
         self.settings.initialize_dynamic_settings()
-        self.sb.prep_score()
-        self.sb.prep_level()
-        self.sb.prep_ships()
+        self.settings.set_start_speed()
+        self.sb.prep_images()
         self.stats.game_active = True
 
         # Get rid of any remaining aliens and bullets
@@ -225,8 +247,7 @@ class AlienInvasion:
             # Pause
             sleep(1)
         else:
-            self.stats.game_active = False
-            pygame.mouse.set_visible(True)
+            self._end_game()
 
     def _update_aliens(self):
         """ Check if the fleet is at an edge, then update the position of all aliens in the fleet """

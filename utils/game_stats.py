@@ -16,4 +16,4 @@ class GameStats:
         """ Initialize statistics that can be changed during a game """
         self.ships_left = self.settings.ship_limit
         self.score = 0
-        self.level = 1
+        self.level = self.settings.manual_level if self.settings.manual_level > 1 else 1

@@ -19,7 +19,19 @@ class ScoreBoard:
         self.text_color = (30, 30, 30)
         self.font = pygame.font.SysFont(None, 48)
 
-        # Prepare the initial score images
+        # Read existing high-score from the file
+        self._read_high_score()
+
+        self.prep_images()
+
+    def check_high_score(self):
+        """ Check to see if there is a new high score """
+        if self.stats.high_score < self.stats.score:
+            self.stats.high_score = self.stats.score
+            self.prep_high_score()
+
+    def prep_images(self):
+        """ Prepare the initial score images """
         self.prep_score()
         self.prep_high_score()
         self.prep_level()
@@ -65,15 +77,23 @@ class ScoreBoard:
             ship.rect.y = 10
             self.ships.add(ship)
 
-    def check_high_score(self):
-        """ Check to see if there is a new high score """
-        if self.stats.high_score < self.stats.score:
-            self.stats.high_score = self.stats.score
-            self.prep_high_score()
-
     def show_score(self):
         """ Draw scores, level and ships to the screen """
         self.screen.blit(self.score_image, self.score_rect)
         self.screen.blit(self.high_score_image, self.high_score_rect)
         self.screen.blit(self.level_image, self.level_rect)
         self.ships.draw(self.screen)
+
+    def store_high_score(self):
+        """ Store high-score value in the file """
+        if self.stats.high_score > 0:
+            with open('highscore.data', 'w') as f:
+                f.write(str(self.stats.high_score))
+
+    def _read_high_score(self):
+        """ Read the current high-score from the file """
+        try:
+            with open('highscore.data') as f:
+                self.stats.high_score = int(f.readline())
+        except FileNotFoundError:
+            pass

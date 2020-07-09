@@ -5,3 +5,4 @@ rocket.py
 keys.py
 test_*.py
 target_practice.py
+highscore.data

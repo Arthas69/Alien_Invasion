@@ -30,6 +30,8 @@ class Settings:
         self.speedup_scale = 1.1
         self.score_scale = 1.5
 
+        self.manual_level = 1  # Ручная установка уровня
+
         self.initialize_dynamic_settings()
 
     def initialize_dynamic_settings(self):
@@ -51,3 +53,11 @@ class Settings:
         self.alien_speed *= self.speedup_scale
 
         self.alien_points = int(self.alien_points * self.score_scale)
+
+    def set_start_speed(self):
+        """ Set starting speed of the game """
+        self.ship_speed *= self.speedup_scale ** (self.manual_level - 1)
+        self.bullet_speed *= self.speedup_scale ** (self.manual_level - 1)
+        self.alien_speed *= self.speedup_scale ** (self.manual_level - 1)
+
+        self.alien_points *= int(self.speedup_scale ** (self.manual_level - 1))
